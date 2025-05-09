@@ -79,3 +79,31 @@ LangGraph was chosen for its:
 
 This framework allows us to chain LLM outputs to real actions (query, decision, DB insert) in a maintainable, explainable graph structure.
 
+## 🔧 Installation
+
+1. **Clone the repository**:
+
+   ```bash
+   git clone https://github.com/your-username/meeting-room-agent.git
+   cd meeting-room-agent
+   ```
+
+2. **Create and activate a virtual environment (optional but recommended)**:
+
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows use: venv\Scripts\activate
+   ```
+
+3. **Install dependencies**:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Run the Streamlit app**:
+
+   ```bash
+   streamlit run app.py
+   ```
+
