@@ -1,5 +1,3 @@
-# room_service.py
-
 import sqlite3
 
 DB_PATH = "booking.db"

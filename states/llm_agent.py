@@ -1,70 +1,72 @@
-from services.room_service import get_available_rooms, has_conflict, add_booking
+from services.room_service import get_available_rooms, add_booking
 from llm_agent import call_groq_llm
 import re
 
-def extract_booking_info(text):
-    room_match = re.search(r"room\s*(\d+)", text, re.IGNORECASE)
-    time_match = re.search(r"at\s*([\d:]+\s*[APMapm]{2})", text)
-    day_match = re.search(r"on\s*(\w+)", text, re.IGNORECASE)
-    persons_match = re.search(r"for\s*(\d+)", text)
+def run(state):
+    room = state.get("room")
+    time = state.get("time")
+    day = state.get("day")
+    persons = state.get("persons")
+    room_available = state.get("room_available")
+    user_busy = state.get("user_busy")
+    room_capacity = state.get("room_capacity", "?")
+    capacity_issue = state.get("capacity_issue", False)
+
+    available_rooms = get_available_rooms(min_capacity=persons)
+    rooms_str = "\n".join([
+        f"{r['name']} (Capacity: {r['capacity']}, Features: {r['features']})"
+        for r in available_rooms
+    ]) or "None found."
+
+    prompt = f"""
+You are an AI assistant helping users book meeting rooms.
+
+User request:
+- Room: {room}
+- Time: {time}
+- Day: {day}
+- Group size: {persons}
+
+Room info:
+- Capacity: {room_capacity}
+- Capacity issue: {"yes" if capacity_issue else "no"}
+- Room availability: {"available" if room_available else "booked"}
+- User calendar status: {"free" if not user_busy else "busy"}
+
+Available rooms that can fit {persons} people:
+{rooms_str}
+
+Instructions:
+- If the user's group size exceeds the room's capacity → explain clearly and suggest other rooms.
+- If the room is booked → suggest an alternative room.
+- If the user is busy → suggest a different time.
+- If both room and time are unavailable → suggest a different room and time.
+- If no suitable rooms are available → explain that directly.
+
+Respond with:
+✅ to confirm a booking
+❌ if booking failed or alternatives are suggested
+"""
+
+    llm_response = call_groq_llm(prompt)
+
+    # Simple extraction of suggestion from the LLM response
+    room_match = re.search(r'Room (\d+)', llm_response)
+    time_match = re.search(r'at\s+(\d{1,2}:\d{2}\s*[APMapm]{2})', llm_response)
+    day_match = re.search(r'on\s+(\w+)', llm_response)
+
+    suggested_room = f"Room {room_match.group(1)}" if room_match else None
+    suggested_time = time_match.group(1) if time_match else None
+    suggested_day = day_match.group(1).lower() if day_match else None
 
     return {
-        "room": f"Room {room_match.group(1)}" if room_match else None,
-        "time": time_match.group(1) if time_match else None,
-        "day": day_match.group(1).lower() if day_match else None,
-        "persons": int(persons_match.group(1)) if persons_match else None
+        "llm_response": llm_response,
+        "room": room,
+        "day": day,
+        "time": time,
+        "persons": persons,
+        "confirmed": ("✅" in llm_response or "confirmed" in llm_response.lower()),
+        "suggested_room": suggested_room,
+        "suggested_time": suggested_time,
+        "suggested_day": suggested_day
     }
-
-def run(state):
-    user_request = state.get("request", "").lower().strip()
-
-    parsed = extract_booking_info(user_request)
-    room = parsed.get("room")
-    time = parsed.get("time")
-    day = parsed.get("day")
-    persons = parsed.get("persons")
-
-    if not all([room, day, time, persons]):
-        return {
-            "llm_response": (
-                "⚠️ I didn't receive complete booking details. Please provide:\n"
-                "- Room name\n- Day\n- Time\n- Number of attendees"
-            ),
-            "room": room,
-            "day": day,
-            "time": time,
-            "persons": persons
-        }
-
-    if has_conflict(room, day, time):
-        available_rooms = [r for r in get_available_rooms(min_capacity=persons) if r["name"] != room]
-        rooms_str = "\n".join([
-            f"{r['name']} (Capacity: {r['capacity']}, Features: {r['features']})"
-            for r in available_rooms
-        ])
-        return {
-            "llm_response": f"❌ {room} is already booked at {time} on {day}.\n\nAvailable alternatives:\n{rooms_str}",
-            "room": room,
-            "day": day,
-            "time": time,
-            "persons": persons
-        }
-
-    # ✅ Book immediately if available
-    booked = add_booking(room, day, time)
-    if booked:
-        return {
-            "llm_response": f"✅ {room} successfully booked at {time} on {day} for {persons} persons.",
-            "room": room,
-            "day": day,
-            "time": time,
-            "persons": persons
-        }
-    else:
-        return {
-            "llm_response": "❌ Failed to book the room. Please try again.",
-            "room": room,
-            "day": day,
-            "time": time,
-            "persons": persons
-        }

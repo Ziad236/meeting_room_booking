@@ -55,12 +55,3 @@ def has_conflict(room_name, day, time):
         """
         result = conn.execute(query, (room_name, day, time)).fetchone()
         return result is not None
-
-def add_booking(room_name, day, time):
-    with connect_db() as conn:
-        room = conn.execute("SELECT id FROM rooms WHERE name = ?", (room_name,)).fetchone()
-        if room:
-            conn.execute("INSERT INTO bookings (room_id, day, time) VALUES (?, ?, ?)", (room[0], day, time))
-            conn.commit()
-            return True
-        return False
