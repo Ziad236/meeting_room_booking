@@ -1,4 +1,4 @@
-from services.room_service import get_available_rooms, add_booking
+from services.room_service import get_available_rooms
 from llm_agent import call_groq_llm
 import re
 

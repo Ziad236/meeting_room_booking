@@ -1,9 +1,8 @@
-# calendar_utils.py
 import os
 import pickle
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-#from datetime import datetime, timedelta
+
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 TOKEN_FILE = 'token.pkl'
