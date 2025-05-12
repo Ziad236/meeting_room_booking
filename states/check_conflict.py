@@ -1,6 +1,6 @@
 from typing import Dict, Any
 from calendar_utils import get_calendar_service, check_availability
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 def run(state: Dict[str, Any]) -> Dict[str, Any]:
@@ -11,14 +11,14 @@ def run(state: Dict[str, Any]) -> Dict[str, Any]:
         state (dict): Input state with 'day' and 'time' keys.
 
     Returns:
-        dict: {'user_busy': True/False} or {'error': ...}
+        dict: Updated state with 'user_busy' flag.
     """
     try:
         day = state["day"].lower()
         time_str = state["time"].strip().lower()
         parsed_time = datetime.strptime(time_str, "%I:%M %p")
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
         today_index = now.weekday()
         target_index = days.index(day)
@@ -30,6 +30,7 @@ def run(state: Dict[str, Any]) -> Dict[str, Any]:
 
         service = get_calendar_service()
         busy = check_availability(service, start_time, end_time)
-        return {"user_busy": bool(busy)}
+
+        return {**state, "user_busy": bool(busy)}
     except Exception as e:
-        return {"error": f"Calendar check failed: {e}"}
+        return {**state, "error": f"Calendar check failed: {e}"}

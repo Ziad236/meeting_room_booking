@@ -48,15 +48,24 @@ Available rooms that can fit {persons} people:
 {rooms_str}
 
 Instructions:
+- ✅ ONLY confirm a booking if BOTH:
+    - the room is available
+    - the user is free (not busy)
+- ❌ NEVER confirm a booking if the user is busy or the room is not available.
 - If the user's group size exceeds the room's capacity → explain clearly and suggest other rooms.
 - If the room is booked → suggest an alternative room.
 - If the user is busy → suggest a different time.
 - If both room and time are unavailable → suggest a different room and time.
-- If no suitable rooms are available → explain that directly.
+- If no suitable rooms are available → explain that clearly.
+
+Important:
+- DO NOT include ✅ if the user is busy or the room is booked.
+- Only use ✅ when you're 100% sure a booking can happen.
+- If in doubt, respond with ❌ and suggest an alternative.
 
 Respond with:
-✅ to confirm a booking
-❌ if booking failed or alternatives are suggested
+✅ only if booking can definitely be confirmed  
+❌ if the booking failed or alternatives are needed
 """
 
     llm_response = call_groq_llm(prompt)
@@ -71,11 +80,8 @@ Respond with:
     suggested_day = day_match.group(1).lower() if day_match else None
 
     return {
+        **state,
         "llm_response": llm_response,
-        "room": room,
-        "day": day,
-        "time": time,
-        "persons": persons,
         "confirmed": ("✅" in llm_response or "confirmed" in llm_response.lower()),
         "suggested_room": suggested_room,
         "suggested_time": suggested_time,

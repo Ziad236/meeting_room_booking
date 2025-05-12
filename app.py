@@ -82,9 +82,9 @@ if st.session_state.result:
     result = st.session_state.result
     if isinstance(result, dict):
         message = (
-                result.get("llm_response")
-                or result.get("error")
-                or result.get("status")
+            result.get("llm_response")
+            or result.get("error")
+            or result.get("status")
         )
     else:
         message = result
@@ -92,9 +92,20 @@ if st.session_state.result:
     st.markdown("#### Assistant Response")
     st.info(message)
 
-    if st.session_state.calendar_event_link:
+    if result.get("booking_confirmed") and st.session_state.calendar_event_link:
         st.success("📅 Booking added to your calendar!")
         st.markdown(f"[View on Google Calendar]({st.session_state.calendar_event_link})")
+
+        st.markdown("---")
+        st.subheader("📋 Current Bookings")
+
+        bookings = get_all_bookings()
+        if bookings:
+            st.dataframe(bookings, use_container_width=True)
+        else:
+            st.info("No bookings found yet.")
+    else:
+        st.info("ℹ️ No confirmed bookings to show.")
 
 st.markdown("---")
 st.subheader("📋 Current Bookings")

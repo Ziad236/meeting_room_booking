@@ -24,13 +24,30 @@ def get_calendar_service():
 
 
 def check_availability(service, start_time, end_time):
+    """
+    Checks if the user's calendar is busy between start_time and end_time.
+
+    Args:
+        service: Google Calendar API service object
+        start_time (datetime): timezone-aware start datetime
+        end_time (datetime): timezone-aware end datetime
+
+    Returns:
+        list: List of busy time blocks (empty if free)
+    """
     body = {
-        "timeMin": start_time.isoformat() + 'Z',
-        "timeMax": end_time.isoformat() + 'Z',
+        "timeMin": start_time.isoformat(),  # no 'Z'
+        "timeMax": end_time.isoformat(),
+        "timeZone": "UTC",
         "items": [{"id": "primary"}]
     }
-    events_result = service.freebusy().query(body=body).execute()
-    return events_result['calendars']['primary']['busy']
+
+    try:
+        events_result = service.freebusy().query(body=body).execute()
+        return events_result['calendars']['primary']['busy']
+    except Exception as e:
+        print("❌ Google Calendar freebusy query failed:", e)
+        return [{"error": str(e)}]
 
 
 def create_event(service, summary, start_time, end_time, location=None, description=None):
