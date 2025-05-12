@@ -1,6 +1,17 @@
 from services.room_service import has_conflict, get_room_by_name
+from typing import Dict, Any
 
-def run(state):
+
+def run(state: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Check if the requested room exists and can accommodate the group size.
+
+    Args:
+        state (dict): Input state containing room name, time, day, persons, and parsed flag.
+
+    Returns:
+        dict: Availability status, room capacity, and capacity issue flag.
+    """
     if not state.get("parsed"):
         return {"error": "Input parsing failed."}
 

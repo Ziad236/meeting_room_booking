@@ -1,7 +1,18 @@
+from typing import Dict, Any
 from calendar_utils import get_calendar_service, check_availability
 from datetime import datetime, timedelta
 
-def run(state):
+
+def run(state: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Check if the user's calendar has a conflict at the requested time.
+
+    Args:
+        state (dict): Input state with 'day' and 'time' keys.
+
+    Returns:
+        dict: {'user_busy': True/False} or {'error': ...}
+    """
     try:
         day = state["day"].lower()
         time_str = state["time"].strip().lower()

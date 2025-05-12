@@ -1,8 +1,19 @@
+from typing import Dict, Any
 from services.room_service import get_available_rooms
 from llm_agent import call_groq_llm
 import re
 
-def run(state):
+
+def run(state: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Use an LLM to reason about booking feasibility and suggest alternatives if needed.
+
+    Args:
+        state (dict): Context including room, day, time, user status, and availability.
+
+    Returns:
+        dict: Updated state including LLM response, confirmation status, and suggestions.
+    """
     room = state.get("room")
     time = state.get("time")
     day = state.get("day")

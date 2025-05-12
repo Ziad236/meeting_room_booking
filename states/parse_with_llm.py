@@ -1,7 +1,18 @@
+from typing import Dict, Any
 import json
 from llm_agent import call_groq_llm
 
-def run(state):
+
+def run(state: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Use LLM to extract structured booking data from user input text.
+
+    Args:
+        state (dict): Dictionary containing the 'request' string from the user.
+
+    Returns:
+        dict: Parsed booking info or an error message.
+    """
     user_input = state.get("request", "").strip()
 
     if not user_input:

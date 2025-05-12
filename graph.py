@@ -8,6 +8,7 @@ from states import (
     confirm_and_book,
 )
 
+
 # --------- State Schema ---------
 
 class BookingState(TypedDict, total=False):
@@ -23,6 +24,7 @@ class BookingState(TypedDict, total=False):
     llm_response: str
     status: str
     error: str
+
 
 # --------- Build LangGraph Workflow ---------
 
@@ -43,6 +45,7 @@ workflow.add_edge("LLMAgent", "ConfirmAndBook")
 workflow.add_edge("ConfirmAndBook", END)
 
 graph = workflow.compile(debug=True)
+
 
 def run_graph(user_input):
     if isinstance(user_input, str):
