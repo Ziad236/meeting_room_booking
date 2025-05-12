@@ -4,8 +4,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
-TOKEN_FILE = 'token.pkl'
-CREDENTIALS_FILE = 'credentials.json'
+TOKEN_FILE = 'your_token'
+CREDENTIALS_FILE = 'your_credentials'
 
 
 def get_calendar_service():
